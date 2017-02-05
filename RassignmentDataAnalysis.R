@@ -10,6 +10,23 @@ scatterplot(train$Recency..months. ~ train$whether.he.she.donated.blood.in.March
             xlab="Recency", ylab="Donation", 
             main="Scatter Plot")
 #------------------------------------------------
+# read training and testing datasets
+traindata <-  read.csv('C:/Users/Alexandros/Dropbox/MSc/2nd Semester/Data analysis/Assignment/transfusion.csv')
+testdata <-  read.csv('C:/Users/Alexandros/Dropbox/MSc/2nd Semester/Data analysis/Assignment/test.csv')
+#----------------------------------------------------------
+lmts <- range(train, test)    #  compare (visually) both datasets
+par (mfrow = c(1, 2))
+boxplot(train, ylim=lmts)
+boxplot(test,ylim=lmts)
+#-----------------------------------------------
+#  Keep only the 4 attributes to show similar distribution
+train1 <- train[,c("Recency", "Frequency", "Time", "C") ,drop=FALSE]
+test1 <- train[,c("Recency", "Frequency", "Time", "C") ,drop=FALSE]
+lmts <- range(train1,test1)
+par(mfrow = c(1, 2))
+boxplot(train1,ylim=lmts)
+boxplot(test1,ylim=lmts)
+#------------------------------------------------
 cor_df <- data.frame(train) # convert file to dataframe
 cor_df$CustID <- NULL
 cor_df$Time..months.<- NULL
@@ -24,9 +41,7 @@ sd(train$Frequency..times.)
 par(mar = rep(2, 4))
 plot(train$Recency..months.,train$whether.he.she.donated.blood.in.March.2007)
 plot(train$Frequency..times.,train$whether.he.she.donated.blood.in.March.2007)
-# read training and testing datasets
-traindata <-  read.csv('C:/Users/Alexandros/Dropbox/MSc/2nd Semester/Data analysis/Assignment/transfusion.csv')
-testdata <-  read.csv('C:/Users/Alexandros/Dropbox/MSc/2nd Semester/Data analysis/Assignment/test.csv')
+#-------------------------------------------------
 dftrain <-data.frame(traindata)
 dftest <- data.frame(testdata)
 sapply(dftrain, typeof)
