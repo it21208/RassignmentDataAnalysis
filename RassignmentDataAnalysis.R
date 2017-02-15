@@ -1,4 +1,5 @@
 library(car)
+library(ggplot2)
 # read whole dataset 748 instances
 train <-  read.csv('C:/Users/Alexandros/Dropbox/MSc/2nd Semester/Data analysis/Assignment/transfusiondata.csv')
 #-------------------------------------------------------------------
@@ -6,6 +7,7 @@ unique(sort(train$Recency..months.))
 index <- (train$Recency..months. == train$Time..months.) & train$Frequency..times. > 1
 dim(train[index,])
 #--------------------------------------------------------------------
+par(mar = rep(2, 4))
 scatterplot(train$Recency..months. ~ train$whether.he.she.donated.blood.in.March.2007, data=train, 
             xlab="Recency", ylab="Donation", 
             main="Scatter Plot")
@@ -152,42 +154,37 @@ matrix_test <- as.matrix(sapply(sorted_dftest2, as.numeric))
 i<-0
 count_train_predicted_donations <- 0
 counter_train <- 0
+number_donation_instances_whole_train <- 0
+false_positives_train_counter <- 0
 for(i in 1:nrow(matrix_train)) {
   if ((matrix_train[i,8] >= 4) & (matrix_train[i,5] == 1)) {
     count_train_predicted_donations = count_train_predicted_donations + 1}
+  if ((matrix_train[i,8] >= 4) & (matrix_train[i,5] == 0)) {
+    false_positives_train_counter = false_positives_train_counter + 1}
   if (matrix_train[i,8] >= 4) {
     counter_train <- counter_train + 1
+  }
+  if (matrix_train[i,5] == 1) {
+    number_donation_instances_whole_train <- number_donation_instances_whole_train + 1
   }
 }
 #------------------------------------------------------------
 count_test_predicted_donations <- 0
 counter_test<-0
+number_donation_instances_whole_test <- 0
+false_positives_test_counter <- 0
 for(i in 1:nrow(matrix_test)) {
   if ((matrix_test[i,8] >= 4) & (matrix_test[i,5] == 1)) {
     count_test_predicted_donations = count_test_predicted_donations + 1 }
+  if ((matrix_test[i,8] >= 4) & (matrix_test[i,5] == 0)) {
+    false_positives_test_counter = false_positives_test_counter + 1}
   if (matrix_test[i,8] >= 4) {
     counter_test <- counter_test + 1
   }
-}
-#-------------------------------------------------------------
-count_train_all_donations <- 0
-for(i in 1:nrow(matrix_train)) {
-  if (matrix_train[i,5] == 1) {
-    count_train_all_donations = count_train_all_donations + 1  }
-}
-#----------------------------------------------------------------
-count_test_all_donations <- 0
-for(i in 1:nrow(matrix_test)) {
   if (matrix_test[i,5] == 1) {
-    count_test_all_donations = count_test_all_donations + 1  }
+    number_donation_instances_whole_test <- number_donation_instances_whole_test + 1
+  }
 }
-#-----------------------------------------------------
-train_donations_accuracy <- (count_train_predicted_donations/count_train_all_donations)
-test_donations_accuracy <- (count_test_predicted_donations / count_test_all_donations )
-donation_err = abs(test_donations_accuracy - train_donations_accuracy)
-cat("Accuracy for predicting donations with training dataset: ", train_donations_accuracy)
-cat("Accuracy for predicting donations with testing dataset: ", test_donations_accuracy)
-cat("Predicting Donations Error: ", donation_err)
 #-----------------------------------------------------
 dftrain <- data.frame(matrix_train)
 dftrain_final <- dftrain[c(1:counter_train),1:8]
@@ -197,4 +194,67 @@ dftest_final <- dftest[c(1:counter_test),1:8]
 #------------------------------------------------------
 write.csv(dftrain_final, file = "C:\\Users\\Alexandros\\Dropbox\\MSc\\2nd Semester\\Data analysis\\Assignment\\train_output.csv", row.names = FALSE)
 write.csv(dftest_final, file = "C:\\Users\\Alexandros\\Dropbox\\MSc\\2nd Semester\\Data analysis\\Assignment\\test_output.csv", row.names = FALSE)
-#--------------------------------------------------------
+#-----------------------------------------------------------------------------------
+# train precision = number of relevant instances retrieved / number of retrieved instances from collection (530)
+precision_train <-  count_train_predicted_donations / counter_train 
+# train recall = number of relevant instances retrieved / number of relevant instances in collection (530)
+recall_train <- count_train_predicted_donations / number_donation_instances_whole_train 
+# measure combines Precision&Recall is harmonic mean of Precision&Recall balanced F-score for train file 
+f_balanced_score_train <- 2*(precision_train*recall_train)/(precision_train+recall_train)
+# test precision
+precision_test <- count_test_predicted_donations / counter_test
+# test recall 
+recall_test <- count_test_predicted_donations / number_donation_instances_whole_test
+# the balanced F-score for test file 
+f_balanced_score_test <- 2*(precision_test*recall_test)/(precision_test+recall_test)
+# error in precision 
+error_precision <- abs(precision_train-precision_test)
+# error in recall 
+error_recall <- abs(recall_train-recall_test)
+# error in f-balanced scores
+error_f_balanced_scores <- abs(f_balanced_score_train-f_balanced_score_test)
+#-----------------------------------------------------
+# Print Statistics for verification and validation
+cat("Precision with training dataset: ", precision_train)
+cat("Recall with training dataset: ", recall_train)
+cat("Precision with testing dataset: ", precision_test)
+cat("Recall with testing dataset: ", recall_test)
+cat("The F-balanced scores with training dataset: ", f_balanced_score_train)
+cat("The F-balanced scores with testing dataset:  ", f_balanced_score_test)
+cat("Error in precision: ", error_precision)
+cat("Error in recall: ", error_recall)
+cat("Error in F-balanced scores: ", error_f_balanced_scores)
+#---------------------------------------------------------------
+# confusion matrix (true positives, false positives, false negatives, true negatives) 
+# calculate true positives for train which is the variable 'count_train_predicted_donations'
+# calculate false positives for train which is the variable 'false_positives_train_counter'
+# calculate false negatives for train
+false_negatives_for_train <- number_donation_instances_whole_train - count_train_predicted_donations
+# calculate true negatives for train 
+true_negatives_for_train <- (nrow(matrix_train) - number_donation_instances_whole_train) - false_positives_train_counter
+collect_train <- c(false_positives_train_counter, true_negatives_for_train, count_train_predicted_donations, false_negatives_for_train) 
+#--------------------------------------------
+# calculate true positives for test which is the variable 'count_test_predicted_donations'
+# calculate false positives for test which is the variable 'false_positives_test_counter'
+# calculate false negatives for test
+false_negatives_for_test <- number_donation_instances_whole_test - count_test_predicted_donations
+# calculate true negatives for test
+true_negatives_for_test <- (nrow(matrix_test) - number_donation_instances_whole_test) - false_positives_test_counter
+collect_test <- c(false_positives_test_counter, true_negatives_for_test, count_test_predicted_donations, false_negatives_for_test)
+#  print a confusion matrix for train
+TrueCondition <- factor(c(0, 0, 1, 1))
+PredictedCondition <- factor(c(1, 0, 1, 0))
+df_conf_mat_train <- data.frame(TrueCondition,PredictedCondition,collect_train)
+library(ggplot2)
+ggplot(data =  df_conf_mat_train, mapping = aes(x = PredictedCondition, y = TrueCondition)) +
+  geom_tile(aes(fill = collect_train), colour = "white") +
+  geom_text(aes(label = sprintf("%1.0f", collect_train)), vjust = 1) +
+  scale_fill_gradient(low = "blue", high = "red") +
+  theme_bw() + theme(legend.position = "none")
+#  print a confusion matrix for test
+df_conf_mat_test <- data.frame(TrueCondition,PredictedCondition,collect_test)
+ggplot(data =  df_conf_mat_test, mapping = aes(x = PredictedCondition, y = TrueCondition)) +
+  geom_tile(aes(fill = collect_test), colour = "white") +
+  geom_text(aes(label = sprintf("%1.0f", collect_test)), vjust = 1) +
+  scale_fill_gradient(low = "blue", high = "red") +
+  theme_bw() + theme(legend.position = "none")
