@@ -258,3 +258,31 @@ ggplot(data =  df_conf_mat_test, mapping = aes(x = PredictedCondition, y = TrueC
   geom_text(aes(label = sprintf("%1.0f", collect_test)), vjust = 1) +
   scale_fill_gradient(low = "blue", high = "red") +
   theme_bw() + theme(legend.position = "none")
+# MCC = (TP * TN - FP * FN)/sqrt((TP+FP)*(TP+FN)*(FP+TN)*(TN+FN)) for train values
+mcc_train <- ((count_train_predicted_donations * true_negatives_for_train) - (false_positives_train_counter * false_negatives_for_train))/sqrt((count_train_predicted_donations+false_positives_train_counter)*(count_train_predicted_donations+false_negatives_for_train)*(false_positives_train_counter+true_negatives_for_train)*(true_negatives_for_train+false_negatives_for_train))
+# print MCC for train
+cat("Matthews Correlation Coefficient for train: ",mcc_train)
+# MCC = (TP * TN - FP * FN)/sqrt((TP+FP) (TP+FN) (FP+TN) (TN+FN)) for test values 
+mcc_test <- ((count_test_predicted_donations * true_negatives_for_test) - (false_positives_test_counter * false_negatives_for_test))/sqrt((count_test_predicted_donations+false_positives_test_counter)*(count_test_predicted_donations+false_negatives_for_test)*(false_positives_test_counter+true_negatives_for_test)*(true_negatives_for_test+false_negatives_for_test))
+# print MCC for test 
+cat("Matthews Correlation Coefficient for test: ",mcc_test)
+# print MCC err between train and err
+cat("Matthews Correlation Coefficient error: ",abs(mcc_train-mcc_test))
+# Total = TP + TN + FP + FN for train values 
+total_train <- count_train_predicted_donations + true_negatives_for_train + false_positives_train_counter + false_negatives_for_train
+# Total = TP + TN + FP + FN for test values
+total_test <- count_test_predicted_donations + true_negatives_for_test + false_positives_test_counter + false_negatives_for_test
+# totalAccuracy = (TP + TN) / Total - for train values 
+totalAccuracyTrain <- (count_train_predicted_donations + true_negatives_for_train)/ total_train
+# totalAccuracy = (TP + TN) / Total - for test values 
+totalAccuracyTest <- (count_test_predicted_donations + true_negatives_for_test)/ total_test 
+# randomAccuracy = 	((TN+FP)*(TN+FN)+(FN+TP)*(FP+TP)) / (Total*Total)  for train values 
+randomAccuracyTrain <- ((true_negatives_for_train+false_positives_train_counter)*(true_negatives_for_train+false_negatives_for_train)+(false_negatives_for_train+count_train_predicted_donations)*(false_positives_train_counter+count_train_predicted_donations))/(total_train*total_train)
+# randomAccuracy = 	((TN+FP)*(TN+FN)+(FN+TP)*(FP+TP)) / (Total*Total)  for test values 
+randomAccuracyTest <- ((true_negatives_for_test+false_positives_test_counter)*(true_negatives_for_test+false_negatives_for_test)+(false_negatives_for_test+count_test_predicted_donations)*(false_positives_test_counter+count_test_predicted_donations))/(total_test*total_test)
+# kappa = (totalAccuracy - randomAccuracy)/(1-randomAccuracy) for train
+kappa_train <- (totalAccuracyTrain-randomAccuracyTrain)/(1-randomAccuracyTrain)   
+# kappa = (totalAccuracy - randomAccuracy)/(1-randomAccuracy) for test
+kappa_test <- (totalAccuracyTest-randomAccuracyTest)/(1-randomAccuracyTest)
+# print kappa error
+cat("Kappa error: ",abs(kappa_train-kappa_test))
