@@ -1,7 +1,7 @@
 library(car)
 library(ggplot2)
 # read whole dataset 748 instances
-train <-  read.csv('C:/Users/Alexandros/Dropbox/MSc/2nd Semester/Data analysis/Assignment/transfusiondata.csv')
+train <-  read.csv('C:/Users/Alexandros/Dropbox/MSc/2nd Semester/Data analysis/transfusiondata.csv')
 #-------------------------------------------------------------------
 unique(sort(train$Recency..months.))
 index <- (train$Recency..months. == train$Time..months.) & train$Frequency..times. > 1
@@ -13,8 +13,8 @@ scatterplot(train$Recency..months. ~ train$whether.he.she.donated.blood.in.March
             main="Scatter Plot")
 #------------------------------------------------
 # read training and testing datasets
-traindata <-  read.csv('C:/Users/Alexandros/Dropbox/MSc/2nd Semester/Data analysis/Assignment/transfusion.csv')
-testdata <-  read.csv('C:/Users/Alexandros/Dropbox/MSc/2nd Semester/Data analysis/Assignment/test.csv')
+traindata <-  read.csv('C:/Users/Alexandros/Dropbox/MSc/2nd Semester/Data analysis/transfusion.csv')
+testdata <-  read.csv('C:/Users/Alexandros/Dropbox/MSc/2nd Semester/Data analysis/test.csv')
 #----------------------------------------------------------
 lmts <- range(train, test)    #  compare (visually) both datasets
 par (mfrow = c(1, 2))
@@ -192,8 +192,8 @@ dftrain_final <- dftrain[c(1:counter_train),1:8]
 dftest <- data.frame(matrix_test)
 dftest_final <- dftest[c(1:counter_test),1:8]
 #------------------------------------------------------
-write.csv(dftrain_final, file = "C:\\Users\\Alexandros\\Dropbox\\MSc\\2nd Semester\\Data analysis\\Assignment\\train_output.csv", row.names = FALSE)
-write.csv(dftest_final, file = "C:\\Users\\Alexandros\\Dropbox\\MSc\\2nd Semester\\Data analysis\\Assignment\\test_output.csv", row.names = FALSE)
+write.csv(dftrain_final, file = "C:\\Users\\Alexandros\\Dropbox\\MSc\\2nd Semester\\Data analysis\\train_output.csv", row.names = FALSE)
+write.csv(dftest_final, file = "C:\\Users\\Alexandros\\Dropbox\\MSc\\2nd Semester\\Data analysis\\test_output.csv", row.names = FALSE)
 #-----------------------------------------------------------------------------------
 # train precision = number of relevant instances retrieved / number of retrieved instances from collection (530)
 precision_train <-  count_train_predicted_donations / counter_train 
